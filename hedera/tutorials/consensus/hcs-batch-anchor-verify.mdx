@@ -1,21 +1,21 @@
 ---
-title: "Batch records and anchor them with HCS"
+title: "Batch, anchor, and verify records with HCS"
 description: "Learn how to batch records off-chain, compute a Merkle root, and anchor it on Hedera Consensus Service for cost-effective verification."
 ---
 
 ## What You Will Accomplish
 - Compute a Merkle root from a batch of off-chain records
-- Anchor that Merkle root on HCS with `ConsensusSubmitMessage`
+- Anchor that Merkle root on HCS using `ConsensusSubmitMessage`
 - Verify the batch (and a single record) later using the mirror node
 
 ## Prerequisites
 - Node.js installed
-- A Hedera testnet account + test HBAR (see [Hedera Portal](https://portal.hedera.com) or [Developer Playground](https://hedera.com/playground))
+- A Hedera testnet account (see [Hedera Portal](https://portal.hedera.com))
 
 ## Table of Contents
 1. Setup and Installation
 2. Understand the dataset
-3. Create a topic for batch anchors
+3. Create a topic for batch anchoring and verification
 4. Compute and anchor the Merkle root
 5. Verify the batch via Mirror Node
 6. Verify a single record (Proof)
@@ -71,9 +71,13 @@ To ensure the hash is deterministic (always the same for the same data), we "can
 
 This ensures that `{ "a": 1, "b": 2 }` and `{ "b": 2, "a": 1 }` result in the exact same hash.
 
----
+### Terminology: Batch Hash vs. Merkle Root
+- **Batch Hash**: Usually `hash(record1 + record2 + ...)`. Hard to verify just one record.
+- **Merkle Root**: `hash(hash(r1) + hash(r2))`. Allows efficient single-record proofs. We use Merkle Roots here for flexibility.
 
-## 3. Create a topic for batch anchors
+
+
+## 3. Create a topic for batch anchoring and verification
 
 Run the setup script to create a new HCS topic:
 
@@ -183,10 +187,6 @@ new TopicMessageSubmitTransaction()
 ```
 
 For this tutorial, our anchor message is ~200 bytes, so no chunking was needed.
-
-### Terminology: Batch Hash vs. Merkle Root
-- **Batch Hash**: Usually `hash(record1 + record2 + ...)`. Hard to verify just one record.
-- **Merkle Root**: `hash(hash(r1) + hash(r2))`. Allows efficient single-record proofs. We use Merkle Roots here for flexibility.
 
 ---
 
@@ -622,7 +622,7 @@ async function createTopic() {
   const client = getClient();
   
   const tx = await new TopicCreateTransaction()
-    .setTopicMemo("HCS Batching and Anchoring Tutorial")
+    .setTopicMemo("HCS Batch, Anchor, and Verify Tutorial")
     .execute(client);
 
   const receipt = await tx.getReceipt(client);
